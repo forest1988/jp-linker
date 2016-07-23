@@ -28,7 +28,7 @@ try:
         'CREATE TABLE ivbpfdictionary (url VARCHAR(255) UNIQUE, html TEXT, title VARCHAR(255), text TEXT, date DATETIME, authors VARCHAR(255), channels VARCHAR(255));')
     dbcon.commit()
 except:
-    print "There already is the table!"
+    print("There already is the table!")
 
 # --- Compile Pattern ---
 pattern = re.compile('\{.+?\}')
@@ -39,7 +39,7 @@ now = datetime.datetime.now()
 
 
 # --- Set First URL ---
-print "This is the code for Crawling 'TECHCRUNCH'"
+print("This is the code for Crawling 'TECHCRUNCH'")
 url = 'http://techcrunch.com/'
 
 b = mechanize.Browser()
@@ -73,9 +73,9 @@ for link in soup.find_all('li', {"class":"river-block"}):
 # latest_url = soup.find('li', {"class":"river-block"}).get('data-permalink')
 # except:
 latest_url = soup.find_all('a', {"data-omni-sm": "gbl_river_headline,1"})[0].get('href')
-print latest_url
+print(latest_url)
 
-print "Latest News : " + latest_url
+print("Latest News : " + latest_url)
 
 tmpurl = latest_url
 
@@ -94,22 +94,22 @@ while True:
     # print article_datetime
     # print now - datetime.timedelta(days=7)
     if article_datetime < now - datetime.timedelta(days=7):
-        print "One Weeks Ago!"
+        print("One Weeks Ago!")
         break
 
     # --- URL ---
-    print "<URL>"
-    print tmpurl
+    print("<URL>")
+    print(tmpurl)
 
     # --- HTML ---
     # print tmphtml
 
     # --- TITLE ---
-    print "<TITLE>"
-    print d['title']
+    print("<TITLE>")
+    print(d['title'])
 
     # --- MAIN TEXT ---
-    print "<MAIN TEXT>"
+    print("<MAIN TEXT>")
     # <div class="article-entry text">
     main_text_asResultSet = soup.find_all('div', {"class": "article-entry text"})
     main_text_asString = unicode.join(u'\n', map(unicode, main_text_asResultSet))
@@ -120,22 +120,22 @@ while True:
     # print tmpsoup.get_text()
 
     # --- DATE TIME ---
-    print "<DATE TIME>"
-    print d['date']
+    print("<DATE TIME>")
+    print(d['date'])
 
     # --- AUTHORS ---
-    print "<AUTHORS>"
-    print d['authors']
+    print("<AUTHORS>")
+    print(d['authors'])
 
     # --- CHANNELS ---
-    print "<CHANNELS>"
-    print d['channels']
+    print("<CHANNELS>")
+    print(d['channels'])
 
     # --- NEXT ---
     for next_link in soup.find_all('a', {"class": "next-link"}):
         next_url = next_link.get('href')
-        print "<NEXT>"
-        print next_url
+        print("<NEXT>")
+        print(next_url)
 
     tmpurl = next_url
 
