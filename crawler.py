@@ -25,7 +25,7 @@ dbcur = dbcon.cursor()
 
 try:
     dbcur.execute(
-        'CREATE TABLE ivbpfdictionary (url VARCHAR(255) UNIQUE, html TEXT, title VARCHAR(255), text TEXT, date DATETIME, authors VARCHAR(255), channels VARCHAR(255));')
+        'CREATE TABLE ivbpfdictionary (url VARCHAR(255) UNIQUE, html TEXT, title VARCHAR(255), parsed_html TEXT, posteriority INT, authors VARCHAR(255), channels VARCHAR(255));')
     dbcon.commit()
 except:
     print("There already is the table!")
