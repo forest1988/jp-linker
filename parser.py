@@ -8,6 +8,7 @@ import re
 import codecs
 import six
 
+
 class word_url:
     def __init__(self, word, url):
         self.word = word
