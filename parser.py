@@ -5,11 +5,12 @@ import sqlite3
 
 from bs4 import BeautifulSoup
 import re
+import codecs
 import six
 
 class word_url:
     def __init__(self, word, url):
-        self.word = keyword
+        self.word = word
         self.url = url
 
 #--- GET target words from SQL, and set as a word
@@ -19,92 +20,91 @@ conn = sqlite3.connect(dbpath)
 cur = conn.cursor()
 cur.execute("SELECT * FROM polls_keyword;")
 
-user_word_urls = []
-
 keyword_urls = []
+
 for item in cur.fetchall():
     keyword = item[1]
     url = item[2]
-    keyword_urls.append(word_url(keyword, "<a href=" + url+ " jplinker=True>" + keyword + "</a>"))
+    if item[3] != 0:
+        keyword_urls.append(word_url(keyword, "<a href=" + url+ " jplinker=True>" + keyword + "</a>"))
 
 
-keyword_urls.sort(key=lambda s: len(s.keyword), reverse=True)
+keyword_urls.sort(key=lambda s: len(s.word), reverse=True)
 
 
-target_html = open('./sample/sample.html', mode='r')
+target_html=codecs.open("sample/sample.html", 'r', "utf-8")
 
-soup = BeautifulSoup(target_html, "lxml")
+# soup = BeautifulSoup(target_html, "lxml")
 
-'''
-for i, descendant in enumerate(soup.descendants):
-    print(i, descendant)
-    #print(descendant.string)
 
-for string in soup.stripped_strings:
-    print(repr(string))
+def preprocess(target, offset):
+    #--- refresh the output of last time
+    tmp = target
+    pattern = re.compile("<(.*?)jplinker=True>(.*?)<(.*?)>")
+    tmp = re.sub(pattern, '\\2', tmp)
 
-#tag_p = soup.p
-#tag_p.a.decompose()
+    user_words = []
 
-#print(tag_p)
+    #--- user tags
+    pattern = re.compile("<a href=(.*?)>(.*?)</a>")
+    iter = re.finditer(pattern, tmp)
+    for user_word_id, match in enumerate(iter):
+        user_word_id = user_word_id + offset
+        user_words.append(match.group(0))
+        tmp = re.sub(match.group(0), "%" + str(user_word_id) + "%", tmp)
 
-# print(soup.find("a").extract())
-#print("soup", soup.find_all(text=True, recursive=False))
-'''
-'''
+    preprocessed = tmp
+    return (preprocessed, user_words)
 
-original_string = soup.p.contents[:]
 
-print(original_string)
-'''
 
-'''
-for tag in soup.find_all(True, recursive=False):
-    if tag.name != "a":
-        if hasattr(tag, "text"):
-            tag.string = "hogehoge"
-            print(tag.name)
-            print(tag.text)
+
+def process(target, keyword_urls, user_words):
+    tmp = target
+    for key_id, keyword_url in enumerate(keyword_urls):
+        pattern = re.compile(keyword_url.word)
+        tmp = re.sub(pattern, "%" + str(key_id) + "%", tmp)
+
+    for key_id, keyword_url in enumerate(keyword_urls):
+        pattern = re.compile("%" + str(key_id) + "%")
+        if keyword_url.url != None:
+            tmp = re.sub(pattern, keyword_url.url, tmp)
         else:
-            print("None")
+            tmp = re.sub(pattern, keyword_url.word, tmp)
 
-print(soup)
-print("Hello!")
-'''
+    for user_word_id, user_word in enumerate(user_words):
+        user_word_id = user_word_id + len(keyword_urls)
+        tmp = re.sub("%" + str(user_word_id) + "%", user_word, tmp)
+        print(tmp)
 
-'''
-print(soup.find_all(attrs={"jplinker": "Done"}))
+    processed = tmp
+    return processed
 
-strings = soup.find_all('font', size='-1')
-for string in strings:
-    # 本当はもっと再帰的にやらないとダメ
-    if soup.find(attrs={"jplinker": "Done"}) !=None:
-        soup.find(attrs={"jplinker": "Done"}).unwrap()
-    print(string)
+def test_keywords(keyword_urls):
+    target_string='カイコガ<a href="http://hogehoge.text" jplinker=True>触角葉のこのような構造</a>は，脊椎動物の<a href="hoge">第一次嗅覚中枢</a>である嗅球と類似'
+    print("target : ", target_string)
+    offset = len(keyword_urls)
 
-'''
+    (preprocessed_string, user_words) = preprocess(target_string, offset)
+    processed_string = process(preprocessed_string, keyword_urls, user_words)
+    print(processed_string)
 
-
-
-
-
-
-
-target_string="カイコガ触覚葉に関する研究＠無脊椎動物プラットフォーム"
-
-for i, tmp_keyword_url in enumerate(keyword_urls):
-    pattern = re.compile(tmp_keyword_url.keyword)
-    target_string = re.sub(pattern, "%" + str(i) + "%", target_string)
+    target_string='カイコガ<a href="hogehoge" jplinker=True>触角葉</a>に関する<a href="aaa">研究</a>＠無脊椎動物プラットフォーム'
+    print("target : ", target_string)
+    (preprocessed_string, user_words) = preprocess(target_string, offset)
+    processed_string = process(preprocessed_string, keyword_urls, user_words)
+    print(processed_string)
 
 
+if __name__=='__main__':
+    target_string=target_html.read()
+    offset = len(keyword_urls)
 
-print(target_string)
+    (preprocessed_string, user_words) = preprocess(target_string, offset)
+    processed_string = process(preprocessed_string, keyword_urls, user_words)
+    print(processed_string)
 
-for urlid, tmp_keyword_url in enumerate(keyword_urls):
-    pattern = re.compile("%" + str(urlid) + "%")
-    if tmp_keyword_url.url != None:
-        target_string = re.sub(pattern, tmp_keyword_url.url, target_string)
-    else:
-        target_string = re.sub(pattern, tmp_keyword_url.keyword, target_string)
+    f = open('./sample/test.html', 'w')
+    f.write(processed_string)
+    f.close()
 
-print(target_string)
