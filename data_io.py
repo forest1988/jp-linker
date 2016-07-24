@@ -55,11 +55,12 @@ def fetch_keyword(dbcursor, database):
 
     keyword_urls = []
 
-    print(cur.fetchall())
+    # print(cur.fetchall())
 
-    '''
+    # TODO
+    print('---Keywords and urls---')
     for item in cur.fetchall():
-
+        print(item)
         keyword = item[1]
         url = item[2]
         if item[3] != 0:
@@ -69,9 +70,8 @@ def fetch_keyword(dbcursor, database):
     keyword_urls.sort(key=lambda s: len(s.word), reverse=True)
 
 
-    target_html=codecs.open("sample/sample.html", 'r', "utf-8")
 
-    '''
+    # <- TODO
 
     return keyword_urls
 
