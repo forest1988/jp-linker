@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup as BS
 from bs4.element import NavigableString, Comment
-import re
 import codecs
+import re
 
 # html = "<html><body>無脊椎動物プラットフォームは<h1>無脊椎動物のプラットフォームです。</h1>無脊椎動物プラットフォームはいいぞ。</body></html>"
 # print(html)
