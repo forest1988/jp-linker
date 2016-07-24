@@ -1,35 +1,58 @@
 #-*- coding : utf-8 -*-
 
+#--- use SQLite
+import sqlite3
+
 from bs4 import BeautifulSoup
 import re
+import six
 
-class keyword_url:
-    def __init__(self, keyword, url):
-        self.keyword = keyword
+class word_url:
+    def __init__(self, word, url):
+        self.word = keyword
         self.url = url
 
-# TODO : GET target words from SQL, and set as a word
+#--- GET target words from SQL, and set as a word
+#--- use SQLite
+dbpath="/Users/shadetree/workspace/django_test/mysite/db.sqlite3"
+conn = sqlite3.connect(dbpath)
+cur = conn.cursor()
+cur.execute("SELECT * FROM polls_keyword;")
 
+user_word_urls = []
 
-# --- test set> ---
 keyword_urls = []
-keywords = ["無脊椎", "脊椎", "無脊椎動物プラットフォーム", "プラットフォーム", "1023", "11"]
-for urlid, keyword in enumerate(keywords):
-    keyword_urls.append(keyword_url(keyword, "<a href=http://>" +str(keyword) + "<a>"))
-    keyword_urls.append(keyword_url(">" + keyword + "</a>", None))
+for item in cur.fetchall():
+    keyword = item[1]
+    url = item[2]
+    keyword_urls.append(word_url(keyword, "<a href=" + url+ " jplinker=True>" + keyword + "</a>"))
 
-keyword_urls.sort(key = lambda s: len(s.keyword), reverse=True)
-# --- <test set ---
 
-target_html = '無脊椎動物プラットフォームは無脊椎動物のプラットフォームです。<a href="hogehoge">無脊椎動物プラットフォーム</a>はいいぞ。'
+keyword_urls.sort(key=lambda s: len(s.keyword), reverse=True)
+
+
+target_html = open('./sample/sample.html', mode='r')
 
 soup = BeautifulSoup(target_html, "lxml")
 
+'''
+for i, descendant in enumerate(soup.descendants):
+    print(i, descendant)
+    #print(descendant.string)
+
+for string in soup.stripped_strings:
+    print(repr(string))
+
+#tag_p = soup.p
+#tag_p.a.decompose()
+
+#print(tag_p)
 
 # print(soup.find("a").extract())
-# print("soup", soup.find_all(text=True, recursive=False))
-
+#print("soup", soup.find_all(text=True, recursive=False))
 '''
+'''
+
 original_string = soup.p.contents[:]
 
 print(original_string)
@@ -49,12 +72,31 @@ print(soup)
 print("Hello!")
 '''
 
-target_string = target_html
-print(target_string)
+'''
+print(soup.find_all(attrs={"jplinker": "Done"}))
+
+strings = soup.find_all('font', size='-1')
+for string in strings:
+    # 本当はもっと再帰的にやらないとダメ
+    if soup.find(attrs={"jplinker": "Done"}) !=None:
+        soup.find(attrs={"jplinker": "Done"}).unwrap()
+    print(string)
+
+'''
+
+
+
+
+
+
+
+target_string="カイコガ触覚葉に関する研究＠無脊椎動物プラットフォーム"
 
 for i, tmp_keyword_url in enumerate(keyword_urls):
     pattern = re.compile(tmp_keyword_url.keyword)
     target_string = re.sub(pattern, "%" + str(i) + "%", target_string)
+
+
 
 print(target_string)
 
