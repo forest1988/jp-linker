@@ -25,6 +25,7 @@ def read_argument():
 
     if args.test:
         print('---TEST MODE---')
+        return args
 
     if args.csv != None:
         print('---CSV MODE---')
