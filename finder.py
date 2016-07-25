@@ -92,6 +92,8 @@ if __name__ == "__main__":
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-j", "--json", action="store_true")
     group.add_argument("-c", "--csv", action="store_true")
+    group.add_argument("-cf", "--file_csv", action="store_true")
+    group.add_argument("-ck", "--keyword_csv", action="store_true")
     parser.add_argument("-d", "--dir", default=".")
     parser.add_argument("-f", "--file", default=".*\.html")
     parser.add_argument("-k", "--keyword", default="<a (.*?)href=(.*?)>(?P<keyword>.*?)</a>")
@@ -101,6 +103,22 @@ if __name__ == "__main__":
         print(find_fileEntries_as_json(args.dir, args.file, args.keyword, args.encoding))
     elif args.csv:
         print(find_fileEntries_as_csv(args.dir, args.file, args.keyword, args.encoding))
+    elif args.file_csv:
+        fileSet = set()
+        for fileEntry in find_fileEntries(args.dir, args.file, args.keyword, args.encoding):
+            fileSet.add(fileEntry.file)
+        result = []
+        for file in fileSet:
+            result.append(",".join([file, "1"]))
+        print("\n".join(result))
+    elif args.keyword_csv:
+        keywords = {}
+        for fileEntry in find_fileEntries(args.dir, args.file, args.keyword, args.encoding):
+            for keywordEntry in fileEntry.keywordEntries:
+                keywords[keywordEntry.keyword] = keywordEntry.target
+        result = []
+        for keyword, target in keywords.items():
+            result.append(",".join([keyword, target, "1"]))
+        print("\n".join(result))
     else:
         parser.print_help()
-    print(args)
