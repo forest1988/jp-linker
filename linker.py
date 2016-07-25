@@ -1,5 +1,11 @@
 #-*- coding : utf-8 -*-
 
+"""
+linker.py
+---
+Core of jp-linker.py
+"""
+
 import re
 import argparse
 import six
@@ -17,8 +23,8 @@ def read_argument():
                         help='Set database system')
     parser.add_argument('--database', '-db', default=default_set['DATABASE'],
                         help='Set database')
-    parser.add_argument('--csv',
-                        help='Use .csv instead of Database. To use this option, you sholud set file path.')
+    parser.add_argument('--csv', nargs=2,
+                        help='Use .csv instead of Database. To use this option, you should set two file paths.')
     parser.add_argument('--test', action='store_true', default=False,
                         help='Run this program in test mode')
     args = parser.parse_args()
@@ -29,7 +35,8 @@ def read_argument():
 
     if args.csv != None:
         print('---CSV MODE---')
-        print('# CSV FILE PATH: {}'.format(args.csv))
+        print('# CSV KEYWORD LIST : {}'.format(args.csv[0]))
+        print('# CSV TARGET LIST  : {}'.format(args.csv[1]))
         return args
 
     print('# DATABASE SYSTEM: {}'.format(args.databasesystem))
@@ -49,7 +56,7 @@ def preprocess(target, offset):
     user_words = []
 
     #--- user tags
-    pattern = re.compile("<a href=(.*?)>(.*?)</a>")
+    pattern = re.compile("<a (.*?)href=(.*?)>(.*?)</a>")
     iter = re.finditer(pattern, tmp)
     for user_word_id, match in enumerate(iter):
         user_word_id = user_word_id + offset
@@ -87,13 +94,11 @@ if __name__=='__main__':
 
     # --- Get data from database (or CSV).
     if args.test:
-         (keyword_urls, target_path) = data_io.test_set()
-         target_paths = [target_path]
+         (keyword_urls, target_paths) = data_io.test_set()
 
     elif args.csv != None:
         # --- CSV mode ---
-        # TODO
-        pass
+        (keyword_urls, target_paths) = data_io.read_csv(args.csv[0], args.csv[1])
 
     else:
         # --- normal mode ---
