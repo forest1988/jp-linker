@@ -83,6 +83,24 @@ def find_fileEntries_as_json(directory, pattern_file, pattern_keyword, encoding=
 def find_fileEntries_as_csv(directory, pattern_file, pattern_keyword, encoding=None):
     return "".join([fileEntry.encodeAsCsv() for fileEntry in find_fileEntries(directory, pattern_file, pattern_keyword, encoding)])
 
+def find_fileEntries_as_file_csv(directory, pattern_file, pattern_keyword, encoding=None):
+    fileSet = set()
+    for fileEntry in find_fileEntries(args.dir, args.file, args.keyword, args.encoding):
+        fileSet.add(fileEntry.file)
+    result = []
+    for file in fileSet:
+        result.append(",".join([file, "1"]))
+    return "\n".join(result)
+
+def find_fileEntries_as_keyword_csv(directory, pattern_file, pattern_keyword, encoding=None):
+    keywords = {}
+    for fileEntry in find_fileEntries(args.dir, args.file, args.keyword, args.encoding):
+        for keywordEntry in fileEntry.keywordEntries:
+            keywords[keywordEntry.keyword] = keywordEntry.target
+    result = []
+    for keyword, target in keywords.items():
+        result.append(",".join([keyword, target, "1"]))
+    return "\n".join(result)
 
 # print(find_fileEntries_as_json("sample", ".*\.html", "<a (.*?)href=(.*?)>(?P<keyword>.*?)</a>", 'utf-8'))
 # print(find_fileEntries_as_csv("sample", ".*\.html", "<a (.*?)href=(.*?)>(?P<keyword>.*?)</a>", 'utf-8'))
@@ -104,21 +122,8 @@ if __name__ == "__main__":
     elif args.csv:
         print(find_fileEntries_as_csv(args.dir, args.file, args.keyword, args.encoding))
     elif args.file_csv:
-        fileSet = set()
-        for fileEntry in find_fileEntries(args.dir, args.file, args.keyword, args.encoding):
-            fileSet.add(fileEntry.file)
-        result = []
-        for file in fileSet:
-            result.append(",".join([file, "1"]))
-        print("\n".join(result))
+        print(find_fileEntries_as_file_csv(args.dir, args.file, args.keyword, args.encoding))
     elif args.keyword_csv:
-        keywords = {}
-        for fileEntry in find_fileEntries(args.dir, args.file, args.keyword, args.encoding):
-            for keywordEntry in fileEntry.keywordEntries:
-                keywords[keywordEntry.keyword] = keywordEntry.target
-        result = []
-        for keyword, target in keywords.items():
-            result.append(",".join([keyword, target, "1"]))
-        print("\n".join(result))
+        print(find_fileEntries_as_keyword_csv(args.dir, args.file, args.keyword, args.encoding))
     else:
         parser.print_help()
