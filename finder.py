@@ -54,7 +54,7 @@ def find_all_files(directory, matcher_file=None):
 
 def find_all_keywords(data, matcher_keyword):
     for match in matcher_keyword.finditer(data):
-        yield match.group("keyword"), match.group(0)
+        yield match.group("keyword"), match.group("target")
 
 def read_file(file, encoding=None):
     fp = None
@@ -108,14 +108,14 @@ def find_fileEntries_as_keyword_csv(directory, pattern_file, pattern_keyword, en
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-j", "--json", action="store_true")
-    group.add_argument("-c", "--csv", action="store_true")
-    group.add_argument("-cf", "--file_csv", action="store_true")
-    group.add_argument("-ck", "--keyword_csv", action="store_true")
-    parser.add_argument("-d", "--dir", default=".")
-    parser.add_argument("-f", "--file", default=".*\.html")
-    parser.add_argument("-k", "--keyword", default="<a (.*?)href=(.*?)>(?P<keyword>.*?)</a>")
-    parser.add_argument("-e", "--encoding", default="utf-8")
+    group.add_argument("-j", "--json", action="store_true", help="output as json")
+    group.add_argument("-c", "--csv", action="store_true", help="output as csv")
+    group.add_argument("-cf", "--file_csv", action="store_true", help="output as file csv")
+    group.add_argument("-ck", "--keyword_csv", action="store_true", help="output as keyword csv")
+    parser.add_argument("-d", "--dir", default=".", help="dir to find recursively")
+    parser.add_argument("-f", "--file", default=".*\.html", help="file pattern (default: '.*\.html')")
+    parser.add_argument("-k", "--keyword", default="<a (.*?)href=(?P<target>.*?)>(?P<keyword>.*?)</a>", help="keyword pattern (default: '<a (.*?)href=(?P<target>.*?)>(?P<keyword>.*?)</a>')")
+    parser.add_argument("-e", "--encoding", default="utf-8", help="encoding for reading files (default: 'utf-8')")
     args = parser.parse_args()
     if args.json:
         print(find_fileEntries_as_json(args.dir, args.file, args.keyword, args.encoding))
