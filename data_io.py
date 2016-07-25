@@ -7,12 +7,7 @@ Data input output.
 """
 
 
-from bs4 import BeautifulSoup as BS
-import datetime
 import sys
-import re
-import ast
-
 import six
 import codecs
 
@@ -25,10 +20,6 @@ class word_url:
 # --- import settings from settings.py
 import settings
 
-'''
-system = settings.DATABASESYSTEM
-database = settings.DATABASES[settings.DATABASE]
-'''
 
 def set_dbcursor(system, database):
     database = settings.DATABASES[database]
@@ -55,56 +46,66 @@ def set_dbcursor(system, database):
 
 def fetch_keyword(dbcursor, database):
     #--- Get keywords and corresponding urls from Database
-
-    cur = dbcursor
-
-    table = settings.DATABASES[database]['TABLES']['KEYWORD']
-
-    # TODO : with 'as' command, we can use table's own attribute.
-    cur.execute("SELECT * FROM " + table + ";")
-
-
-
+    print('fetching keywords...')
     keyword_urls = []
+    cur = dbcursor
+    table = settings.DATABASES[database]['TABLES']['KEYWORD']['NAME']
+    columns = settings.DATABASES[database]['TABLES']['KEYWORD']['COLUMNS']
 
-    # print(cur.fetchall())
+    query = "SELECT DISTINCT "+columns[0]+" AS keyword, "+columns[1]+" AS url from "+table+" WHERE "+columns[2]+"=1 ;"
+    try:
+        cur.execute(query)
+    except BaseException:
+        print('ERROR! The TABLE name of keywords is not correctly set.')
+        print(sys.exc_info()[1])
+        keyword_urls = []
+        return keyword_urls
 
-    # TODO
     print('---Keywords and urls---')
     for item in cur.fetchall():
-        print(item)
-        keyword = item[1]
-        url = item[2]
-        if item[3] != 0:
-            keyword_urls.append(word_url(keyword, "<a href=" + url+ " jplinker=True>" + keyword + "</a>"))
-
+        keyword = item[0]
+        url = item[1]
+        print("{0:<20s} : {1}".format(item[0], item[1]))
+        keyword_urls.append(word_url(keyword, "<a href=" + url + " jplinker=True>" + keyword + "</a>"))
 
     keyword_urls.sort(key=lambda s: len(s.word), reverse=True)
-
-
-
-    # <- TODO
+    print('----------')
 
     return keyword_urls
 
-def fetch_html(dbcursor, database):
-    # TODO
+
+def fetch_target(dbcursor, database):
+    print('fetching targets...')
     cur = dbcursor
+    target_paths = []
+    cur = dbcursor
+    table = settings.DATABASES[database]['TABLES']['TARGET']['NAME']
+    columns = settings.DATABASES[database]['TABLES']['TARGET']['COLUMNS']
 
-    table = settings.DATABASES[database]['TABLES']['HTML']
-
+    query = "SELECT DISTINCT " + columns[0] + " AS path from " + table + " WHERE " + columns[1] + "=1 ;"
     try:
-        cur.execute("SELECT * FROM " + table + ";")
+        cur.execute(query)
     except BaseException:
         print('ERROR! The TABLE name of target file path is not correctly set.')
-        print('\t Please check "settings.py"')
+        print(sys.exc_info()[1])
+        target_paths = []
+        return target_paths
 
-    pass
+    print('---Target---')
+    for item in cur.fetchall():
+        print(item[0])
+        path = item[0]
+        target_paths.append(item[0])
+    print('----------')
+
+    return target_paths
+
 
 
 # --- CSV MODE ---
 def read_csv(keyword_list_path, target_list_path):
     import csv
+
     keyword_urls = []
     target_paths = []
 
@@ -127,7 +128,7 @@ def read_csv(keyword_list_path, target_list_path):
                 pass
 
         with codecs.open(filepath, 'r', correct_encoding) as csvfile:
-            print('encoing: ', correct_encoding)
+            print('encoing of ', filepath, '\t: ',correct_encoding)
             reader = csv.reader(csvfile, delimiter=",", quotechar='"')
 
             if i == 0:

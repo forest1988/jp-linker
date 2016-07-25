@@ -6,6 +6,7 @@ linker.py
 Core of jp-linker.py
 """
 
+import sys
 import re
 import argparse
 import six
@@ -104,10 +105,17 @@ if __name__=='__main__':
         # --- normal mode ---
         cur = data_io.set_dbcursor(args.databasesystem, args.database)
         keyword_urls = data_io.fetch_keyword(cur, args.database)
-        target_paths = data_io.fetch_html(cur, args.database)
+        target_paths = data_io.fetch_target(cur, args.database)
 
-        # for debug
-        target_paths = ['./sample/sample.html', './sample/test.html']
+
+    if len(keyword_urls) == 0 :
+        print('ERROR! There is no keywords!')
+        sys.exit(-1)
+
+    if len(target_paths) == 0 :
+        print('ERROR! There is no targets!')
+        sys.exit(-1)
+
 
     for target_path in target_paths:
         target_html = codecs.open(target_path, 'r', "utf-8")
@@ -123,5 +131,3 @@ if __name__=='__main__':
         f = open((target_path + '.processed'), 'w')
         f.write(processed_string)
         f.close()
-
-
